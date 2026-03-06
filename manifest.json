@@ -1,0 +1,15 @@
+{
+  "name": "Vulcan JSON Editor",
+  "short_name": "VulcanJSON",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0A0014",
+  "theme_color": "#BC13FE",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/337/337941.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

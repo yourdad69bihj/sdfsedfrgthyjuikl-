@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="manifest.json">
+    <title>VULCAN JSON EDITOR</title>
+    <style>
+        :root { --purple: #BC13FE; --dark: #0A0014; --neon: #00f2ea; --error: #ff4444; }
+        body { background: var(--dark); color: white; font-family: 'Consolas', monospace; margin: 0; padding: 15px; display: flex; flex-direction: column; height: 100vh; box-sizing: border-box; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .header h1 { font-size: 18px; color: var(--purple); margin: 0; text-shadow: 0 0 10px var(--purple); }
+
+        /* The Editor Area */
+        #editor { 
+            flex-grow: 1; width: 100%; background: #000; color: var(--neon); 
+            border: 1px solid #333; border-radius: 10px; padding: 15px; 
+            font-size: 14px; resize: none; outline: none; transition: 0.3s;
+            box-sizing: border-box; line-height: 1.5;
+        }
+        #editor:focus { border-color: var(--purple); box-shadow: 0 0 10px rgba(188, 19, 254, 0.2); }
+        .invalid { border-color: var(--error) !important; box-shadow: 0 0 15px var(--error) !important; }
+
+        /* Controls */
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn { 
+            padding: 15px; border-radius: 8px; border: none; font-weight: bold; 
+            text-transform: uppercase; cursor: pointer; font-size: 12px;
+        }
+        .btn-load { background: #333; color: white; }
+        .btn-save { background: var(--purple); color: white; }
+        
+        #status { font-size: 10px; margin-top: 10px; text-align: center; color: #555; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>VULCAN JSON v1</h1>
+        <div id="valid-tag" style="color: var(--neon); font-size: 10px;">VALID JSON</div>
+    </div>
+
+    <textarea id="editor" spellcheck="false" placeholder='{ "status": "Ready to edit..." }'></textarea>
+
+    <div class="controls">
+        <button class="btn btn-load" onclick="importFile()">📂 OPEN FILE</button>
+        <button class="btn btn-save" onclick="exportFile()">💾 SAVE AS .JSON</button>
+    </div>
+
+    <div id="status">IDLE | WAITING FOR INPUT</div>
+
+    <input type="file" id="file-input" style="display:none" accept=".json">
+
+    <script>
+        const editor = document.getElementById('editor');
+        const status = document.getElementById('status');
+        const tag = document.getElementById('valid-tag');
+
+        // Real-time Syntax Checker
+        editor.addEventListener('input', () => {
+            try {
+                JSON.parse(editor.value);
+                editor.classList.remove('invalid');
+                tag.innerText = "VALID JSON";
+                tag.style.color = "var(--neon)";
+                status.innerText = "SYNTAX OK";
+            } catch (e) {
+                editor.classList.add('invalid');
+                tag.innerText = "INVALID SYNTAX";
+                tag.style.color = "var(--error)";
+                status.innerText = e.message;
+            }
+        });
+
+        // Open a file from phone storage
+        function importFile() {
+            const input = document.getElementById('file-input');
+            input.click();
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = event => {
+                    editor.value = event.target.result;
+                    status.innerText = "LOADED: " + file.name;
+                };
+                reader.readAsText(file);
+            };
+        }
+
+        // Save the edited file back to the phone
+        function exportFile() {
+            const content = editor.value;
+            try {
+                JSON.parse(content); // Final check
+                const blob = new Blob([content], {type: "application/json"});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = "edited_config.json";
+                a.click();
+                status.innerText = "FILE EXPORTED SUCCESSFULLY";
+            } catch (e) {
+                alert("Cannot save invalid JSON! Fix the red box first.");
+            }
+        }
+    </script>
+</body>
+</html>
